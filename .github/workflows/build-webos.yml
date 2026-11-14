@@ -1,6 +1,17 @@
 name: Build (webOS)
 
 on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'CMake Build Type'
+        required: true
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
+          - RelWithDebInfo
   push:
     # Don't run for tags
     tags-ignore:
@@ -16,8 +27,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug
+  # Uses the manual dispatch selection if triggered manually, otherwise falls back to Debug
+  BUILD_TYPE: ${{ github.event.inputs.build_type || 'Debug' }}
 
 jobs:
   build:
@@ -25,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     # Branches of this repository are already built by the push trigger,
     # so only build pull requests opened from forks.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    if: github.event_name != 'pull_request' || github.event_pull_request.head.repo.full_name != github.repository
 
     steps:
       - name: Set Short Commit ID
